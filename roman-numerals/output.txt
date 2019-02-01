@@ -1,0 +1,58 @@
+Excluding tags: [:pending]
+
+
+RomanTest
+  * test 9  * test 9 (excluded)
+  * test 48  * test 48 (excluded)
+  * test 141  * test 141 (excluded)
+  * test 402  * test 402 (excluded)
+  * test 3  * test 3 (1.5ms)
+
+  1) test 3 (RomanTest)
+     roman_numerals_test.exs:20
+     Assertion with == failed
+     code:  assert Roman.numerals(3) == "III"
+     left:  [["I", "I"]]
+     right: "III"
+     stacktrace:
+       roman_numerals_test.exs:21: (test)
+
+  * test 27  * test 27 (excluded)
+  * test 3000  * test 3000 (excluded)
+  * test 575  * test 575 (excluded)
+  * test 163  * test 163 (excluded)
+  * test 93  * test 93 (excluded)
+  * test 911  * test 911 (excluded)
+  * test 1024  * test 1024 (excluded)
+  * test 1  * test 1 (0.01ms)
+
+  2) test 1 (RomanTest)
+     roman_numerals_test.exs:12
+     Assertion with == failed
+     code:  assert Roman.numerals(1) == "I"
+     left:  [[]]
+     right: "I"
+     stacktrace:
+       roman_numerals_test.exs:13: (test)
+
+  * test 2  * test 2 (0.04ms)
+
+  3) test 2 (RomanTest)
+     roman_numerals_test.exs:16
+     Assertion with == failed
+     code:  assert Roman.numerals(2) == "II"
+     left:  [["I"]]
+     right: "II"
+     stacktrace:
+       roman_numerals_test.exs:17: (test)
+
+  * test 6  * test 6 (excluded)
+  * test 4  * test 4 (excluded)
+  * test 5  * test 5 (excluded)
+  * test 59  * test 59 (excluded)
+
+
+Finished in 0.07 seconds (0.07s on load, 0.00s on tests)
+18 tests, 3 failures, 15 excluded
+
+Randomized with seed 410139
