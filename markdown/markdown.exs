@@ -14,44 +14,43 @@ defmodule Markdown do
   def parse(m) do
     m
     |> String.split("\n")
-    |> Enum.map(fn t -> process(t) end)
-    |> Enum.join
-    |> replace_tags
-    |> patch
+    |> Enum.map_join(&process_line/1)
+    |> replace_tags()
+    |> patch()
   end
 
-  defp process("#" <> _ = t) do
-    t
-    |> parse_header_md_level
-    |> enclose_with_header_tag
-    |> replace_tags
+  defp process_line("#" <> _ = header) do
+    header
+    |> parse_header_md_level()
+    |> enclose_with_header_tag()
+    |> replace_tags()
   end
 
-  defp process("* " <> rest) do
-    "<li>" <> rest <> "</li>"
+  defp process_line("* " <> rest) do
+    "<li>#{rest}</li>"
   end
 
-  defp process(t) do
-    "<p>" <> t <> "</p>"
+  defp process_line(text) do
+    "<p>#{text}</p>"
   end
 
-  defp parse_header_md_level(hwt) do
-    [h | t] = String.split(hwt)
+  defp parse_header_md_level(header) do
+    [h | t] = String.split(header)
     {to_string(String.length(h)), Enum.join(t, " ")}
   end
 
-  defp enclose_with_header_tag({hl, htl}) do
-    "<h" <> hl <> ">" <> htl <> "</h" <> hl <> ">"
+  defp enclose_with_header_tag({header_size, header_text}) do
+    "<h#{header_size}>#{header_text}</h#{header_size}>"
   end
 
-  defp replace_tags(string) do
-    string
+  defp replace_tags(line) do
+    line
     |> String.replace(~r/\__(.*?)\__/, "<strong>\\g{1}</strong>")
     |> String.replace(~r/\_(.*?)\_/, "<em>\\g{1}</em>")
   end
 
-  defp patch(l) do
-    l
+  defp patch(line) do
+    line
     |> String.replace("<li>", "<ul><li>", global: false)
     |> String.replace_suffix("</li>", "</li></ul>")
   end
