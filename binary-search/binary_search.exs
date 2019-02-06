@@ -19,7 +19,7 @@ defmodule BinarySearch do
 
   @spec search(tuple, integer) :: {:ok, integer} | :not_found
   def search(numbers, key) do
-    do_search(Tuple.to_list(numbers), key, 0, tuple_size(numbers))
+    do_search(numbers, key, 0, tuple_size(numbers))
   end
 
   defp do_search(numbers, key, l, r) when l > r, do: :not_found
@@ -27,9 +27,10 @@ defmodule BinarySearch do
   defp do_search(numbers, key, l, r) do
     middle_index = div(r + l, 2)
     cond do
-      Enum.at(numbers, middle_index) == key -> {:ok, middle_index}
-      Enum.at(numbers, middle_index) > key -> do_search(numbers, key, l, middle_index - 1)
-      Enum.at(numbers, middle_index) < key -> do_search(numbers, key, middle_index + 1 , r)
+      middle_index >= tuple_size(numbers) -> :not_found
+      elem(numbers, middle_index) == key -> {:ok, middle_index}
+      elem(numbers, middle_index) > key -> do_search(numbers, key, l, middle_index - 1)
+      elem(numbers, middle_index) < key -> do_search(numbers, key, middle_index + 1 , r)
     end
   end
 end
