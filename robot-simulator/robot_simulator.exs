@@ -1,4 +1,5 @@
 defmodule RobotSimulator do
+  defstruct direction: nil, position: nil
   @doc """
   Create a Robot Simulator given an initial direction and position.
 
@@ -6,7 +7,7 @@ defmodule RobotSimulator do
   """
   @spec create(direction :: atom, position :: {integer, integer}) :: any
   def create() do
-    {:north, {0, 0}}
+    %RobotSimulator{direction: :north, position: {0, 0}}
   end
 
 
@@ -15,7 +16,7 @@ defmodule RobotSimulator do
   end
 
   def create(direction, {x, y}) when is_number(x) and is_number(y) do
-    {direction, {x, y}}
+    %RobotSimulator{direction: direction, position: {x, y}}
   end
 
   def create(_direction, _position) do
@@ -35,26 +36,43 @@ defmodule RobotSimulator do
     end)
   end
 
-  defp execute_instruction({:north, {x, y}}, "A"), do: {:north, {x, y + 1}}
-  defp execute_instruction({:south, {x, y}}, "A"), do: {:south, {x, y - 1}}
-  defp execute_instruction({:east, {x, y}}, "A"), do: {:east, {x + 1, y}}
-  defp execute_instruction({:west, {x, y}}, "A"), do: {:west, {x - 1, y}}
-
-  defp execute_instruction({:north, {x, y}}, "L"), do: {:west, {x, y}}
-  defp execute_instruction({:south, {x, y}}, "L"), do: {:east, {x, y}}
-  defp execute_instruction({:east, {x, y}}, "L"), do: {:north, {x, y}}
-  defp execute_instruction({:west, {x, y}}, "L"), do: {:south, {x, y}}
-
-  defp execute_instruction({:north, {x, y}}, "R"), do: {:east, {x, y}}
-  defp execute_instruction({:south, {x, y}}, "R"), do: {:west, {x, y}}
-  defp execute_instruction({:east, {x, y}}, "R"), do: {:south, {x, y}}
-  defp execute_instruction({:west, {x, y}}, "R"), do: {:north, {x, y}}
-
   defp execute_instruction({:error, "invalid instruction"} = error, _instruction), do: error
   defp execute_instruction(_robot, instruction) when instruction not in ["L", "R", "A"] do
     {:error, "invalid instruction"}
   end
 
+  defp execute_instruction(robot, "A"), do: advance(robot)
+  defp execute_instruction(robot, "L"), do: turn_left(robot)
+  defp execute_instruction(robot, "R"), do: turn_right(robot)
+
+  defp advance(%RobotSimulator{direction: :north, position: {x, y}}), do: %RobotSimulator{direction: :north, position: {x, y + 1}}
+  defp advance(%RobotSimulator{direction: :south, position: {x, y}}), do: %RobotSimulator{direction: :south, position: {x, y - 1}}
+  defp advance(%RobotSimulator{direction: :east, position: {x, y}}), do: %RobotSimulator{direction: :east, position: {x + 1, y}}
+  defp advance(%RobotSimulator{direction: :west, position: {x, y}}), do: %RobotSimulator{direction: :west, position: {x - 1, y}}
+
+  defp turn_left(%RobotSimulator{direction: direction} = robot) do
+    new_direction =
+      case direction do
+        :north -> :west
+        :west -> :south
+        :south -> :east
+        :east -> :north
+      end
+
+    %RobotSimulator{robot | direction: new_direction}
+  end
+
+  defp turn_right(%RobotSimulator{direction: direction} = robot) do
+    new_direction =
+      case direction do
+        :north -> :east
+        :west -> :north
+        :south -> :west
+        :east -> :south
+      end
+
+    %RobotSimulator{robot | direction: new_direction}
+  end
 
   @doc """
   Return the robot's direction.
@@ -62,7 +80,7 @@ defmodule RobotSimulator do
   Valid directions are: `:north`, `:east`, `:south`, `:west`
   """
   @spec direction(robot :: any) :: atom
-  def direction({direction, _}) do
+  def direction(%RobotSimulator{direction: direction}) do
     direction
   end
 
@@ -70,7 +88,7 @@ defmodule RobotSimulator do
   Return the robot's position.
   """
   @spec position(robot :: any) :: {integer, integer}
-  def position({_, position}) do
+  def position(%RobotSimulator{position: position}) do
     position
   end
 end
