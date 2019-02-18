@@ -55,4 +55,9 @@ defmodule BankAccount do
   def handle_call({:update, amount}, _from, state), do: {:reply, :ok, %BankAccount{state | amount: state.amount + amount}}
 
   def handle_call(:close_bank, _from, state), do: {:reply, :ok, %BankAccount{state | status: :closed}}
+
+
+  def foo() do
+    :bar
+  end
 end
