@@ -1,5 +1,5 @@
 defmodule Bowling do
-  defstruct current_frame: {0, 0}, frames: []
+  defstruct current_frame: {0, 0}, frames: [], expected_rolls: 0
 
   @doc """
     Creates a new game of bowling that can be used to store the results of
@@ -8,7 +8,7 @@ defmodule Bowling do
 
   @spec start() :: any
   def start do
-    %Bowling{current_frame: {:empty, :empty}, frames: []}
+    %Bowling{current_frame: {:empty, :empty}, frames: [], expected_rolls: 20}
   end
 
   @doc """
@@ -25,24 +25,35 @@ defmodule Bowling do
     {:error, "Pin count exceeds pins on the lane"}
   end
 
-  def roll(%Bowling{current_frame: {:empty, :empty}, frames: frames} = game, roll) do
+  def roll(%Bowling{frames: frames, expected_rolls: exp_rolls} = game, roll) when exp_rolls <= length(frames) do
+    {:error, "Cannot roll after game is over"}
+  end
+
+  def roll(%Bowling{current_frame: {:empty, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) do
     %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll]}
   end
 
-  def roll(%Bowling{current_frame: {10, :empty}, frames: frames}, roll) do
-    %Bowling{current_frame: {roll, :empty}, frames: frames ++ [roll] }
+  def roll(%Bowling{current_frame: {10, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) do
+    case exp_rolls == length(frames) + 1 do
+      true -> %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll], expected_rolls: exp_rolls + 2 }
+      _ -> %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll] }
+    end
+
   end
 
-  def roll(%Bowling{current_frame: {f1, :empty}, frames: frames}, roll) when f1 + roll > 10 do
+  def roll(%Bowling{current_frame: {f1, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) when f1 + roll > 10 do
     {:error, "Pin count exceeds pins on the lane"}
   end
 
-  def roll(%Bowling{current_frame: {f1, :empty}, frames: frames} = game, roll) do
-    %Bowling{game | current_frame: {f1, roll}, frames: frames ++ [roll]}
+  def roll(%Bowling{current_frame: {f1, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) do
+    case exp_rolls == length(frames) + 1 and f1 + roll == 10 do
+      true -> %Bowling{game | current_frame: {f1, roll}, frames: frames ++ [roll], expected_rolls: exp_rolls + 1}
+      _ -> %Bowling{game | current_frame: {f1, roll}, frames: frames ++ [roll]}
+    end
   end
 
-  def roll(%Bowling{current_frame: {_f1, _f2}, frames: frames}, roll) do
-   %Bowling{current_frame: {roll, :empty}, frames: frames ++ [roll]}
+  def roll(%Bowling{current_frame: {_f1, _f2}, frames: frames} = game, roll) do
+   %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll]}
   end
 
 
