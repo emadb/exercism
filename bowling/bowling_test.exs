@@ -186,7 +186,6 @@ defmodule BowlingTest do
     assert Bowling.roll(game, 0) == {:error, "Cannot roll after game is over"}
   end
 
-  @tag :pending
   test "bonus rolls for a strike in the last frame must be rolled before score can be calculated" do
     game = Bowling.start()
     rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
