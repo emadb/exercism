@@ -1,5 +1,5 @@
 defmodule Bowling do
-  defstruct current_frame: {0, 0}, frames: [], expected_rolls: 0
+  defstruct current_frame: {0, 0}, rolls: [], frame_count: 0
 
   @doc """
     Creates a new game of bowling that can be used to store the results of
@@ -8,7 +8,7 @@ defmodule Bowling do
 
   @spec start() :: any
   def start do
-    %Bowling{current_frame: {:empty, :empty}, frames: [], expected_rolls: 20}
+    %Bowling{current_frame: {:empty, :empty}, rolls: [], frame_count: 1}
   end
 
   @doc """
@@ -25,35 +25,33 @@ defmodule Bowling do
     {:error, "Pin count exceeds pins on the lane"}
   end
 
-  def roll(%Bowling{frames: frames, expected_rolls: exp_rolls} = game, roll) when exp_rolls <= length(frames) do
-    {:error, "Cannot roll after game is over"}
+
+  def roll(%Bowling{current_frame: {:empty, :empty}, rolls: rolls} = game, roll) do
+    %Bowling{game | current_frame: {roll, :empty}, rolls: rolls ++ [roll]}
   end
 
-  def roll(%Bowling{current_frame: {:empty, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) do
-    %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll]}
+  def roll(%Bowling{current_frame: {10, :empty}, rolls: rolls, frame_count: count} = game, roll) do
+    %Bowling{game | current_frame: {roll, :empty}, rolls: rolls ++ [roll], frame_count: count + 1 }
   end
 
-  def roll(%Bowling{current_frame: {10, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) do
-    case exp_rolls == length(frames) + 1 do
-      true -> %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll], expected_rolls: exp_rolls + 2 }
-      _ -> %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll] }
-    end
-
-  end
-
-  def roll(%Bowling{current_frame: {f1, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) when f1 + roll > 10 do
+  def roll(%Bowling{current_frame: {f1, :empty}}, roll) when f1 + roll > 10 do
     {:error, "Pin count exceeds pins on the lane"}
   end
 
-  def roll(%Bowling{current_frame: {f1, :empty}, frames: frames, expected_rolls: exp_rolls} = game, roll) do
-    case exp_rolls == length(frames) + 1 and f1 + roll == 10 do
-      true -> %Bowling{game | current_frame: {f1, roll}, frames: frames ++ [roll], expected_rolls: exp_rolls + 1}
-      _ -> %Bowling{game | current_frame: {f1, roll}, frames: frames ++ [roll]}
-    end
+  def roll(%Bowling{current_frame: {f1, :empty}, rolls: rolls} = game, roll) do
+    %Bowling{game | current_frame: {f1, roll}, rolls: rolls ++ [roll]}
   end
 
-  def roll(%Bowling{current_frame: {_f1, _f2}, frames: frames} = game, roll) do
-   %Bowling{game | current_frame: {roll, :empty}, frames: frames ++ [roll]}
+  def roll(%Bowling{current_frame: {f1, f2}, rolls: rolls, frame_count: count} = game, roll) when count == 10 and f1 + f2 == 10 do
+    %Bowling{game | current_frame: {roll, :empty}, rolls: rolls ++ [roll], frame_count: count + 1}
+  end
+
+  def roll(%Bowling{current_frame: {f1, f2}, frame_count: count}, _roll) when count >= 10 and f1 + f2 < 10 do
+    {:error, "Cannot roll after game is over"}
+  end
+
+  def roll(%Bowling{current_frame: {_f1, _f2}, rolls: rolls, frame_count: count} = game, roll) do
+   %Bowling{game | current_frame: {roll, :empty}, rolls: rolls ++ [roll], frame_count: count + 1}
   end
 
 
@@ -62,12 +60,22 @@ defmodule Bowling do
     If the game isn't complete, it returns a helpful message.
   """
   @spec score(any) :: integer | String.t()
-  def score(%Bowling{frames: []}), do: {:error, "Score cannot be taken until the end of the game"}
-  def score(%Bowling{frames: frames}) when length(frames) < 12, do: {:error, "Score cannot be taken until the end of the game"}
+  def score(%Bowling{rolls: []}), do: {:error, "Score cannot be taken until the end of the game"}
 
+  def score(%Bowling{current_frame: {10, :empty}, rolls: rolls, frame_count: count}) when count == 10 or count == 11 do
+    [10, f1, f2 | _rest] = Enum.reverse(rolls)
+    if (f1 + f2 == 10 and f1 != 10 and f2 != 10) do
+      calc_score(rolls, 0)
+    else
+      {:error, "Score cannot be taken until the end of the game"}
+    end
+  end
+
+  def score(%Bowling{current_frame: {f1, f2}, frame_count: 10}) when f1 + f2 == 10, do: {:error, "Score cannot be taken until the end of the game"}
+  def score(%Bowling{frame_count: count}) when count < 10, do: {:error, "Score cannot be taken until the end of the game"}
 
   def score(game) do
-    calc_score(game.frames, 0)
+    calc_score(game.rolls, 0)
   end
 
   defp calc_score([10, f2, f3], score) do

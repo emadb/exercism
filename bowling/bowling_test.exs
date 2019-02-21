@@ -193,7 +193,6 @@ defmodule BowlingTest do
     assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
   end
 
-  @tag :pending
   test "both bonus rolls for a strike in the last frame must be rolled before score can be calculated" do
     game = Bowling.start()
     rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
@@ -201,7 +200,6 @@ defmodule BowlingTest do
     assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
   end
 
-  @tag :pending
   test "bonus roll for a spare in the last frame must be rolled before score can be calculated" do
     game = Bowling.start()
     rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3]
