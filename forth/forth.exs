@@ -1,5 +1,6 @@
 defmodule Forth do
   @opaque evaluator :: any
+
   @instruction_set ["dup", "drop", "swap", "over"]
 
   defstruct command: "", instructions: %{}
@@ -25,17 +26,17 @@ defmodule Forth do
     Enum.reduce(lines, ev, fn l, acc ->
       case String.starts_with?(l, ":") do
         true ->  define_instruction(ev, l)
-        _ -> execute_cmd(acc, l)
+        false -> execute_cmd(acc, l)
       end
     end)
   end
 
   defp execute_cmd(ev, s) do
     res = s
-    |> String.split(~r/[\pC\pZ]+/u)
-    |> replace_custom(ev.instructions, [])
-    |> do_eval(ev.command, ev.instructions)
-    |> Enum.reverse()
+      |> String.split(~r/[\pC\pZ]+/u)
+      |> replace_custom(ev.instructions, [])
+      |> do_eval(ev.command, ev.instructions)
+      |> Enum.reverse()
     %Forth{command: res, instructions: ev.instructions}
   end
 
@@ -45,10 +46,6 @@ defmodule Forth do
 
   defp replace_custom([], _i, acc) do
     acc
-  end
-
-  defp clean_up(str) do
-
   end
 
   defp define_instruction(%Forth{instructions: instr} = ev, ": " <> line) do
@@ -74,9 +71,7 @@ defmodule Forth do
     do_eval(rest, [res] ++ stack, i)
   end
 
-  defp do_eval(["/" | rest], ["0", b | stack], _i) do
-    raise Forth.DivisionByZero
-  end
+  defp do_eval(["/" | _rest], ["0", _b | _stack], _i), do: raise Forth.DivisionByZero
 
   defp do_eval(["/" | rest], [a, b | stack], i) do
     res = div_string(b, a)
@@ -88,31 +83,18 @@ defmodule Forth do
     do_eval(rest, [res] ++ stack, i)
   end
 
-  defp do_eval([], res, _i) do
-    res
-  end
+  defp do_eval([], res, _i), do: res
 
-  defp do_eval(["dup" | rest], [a | stack], i) do
-    do_eval(rest, [a, a] ++ stack, i)
-  end
+  defp do_eval(["dup" | rest], [a | stack], i), do: do_eval(rest, [a, a] ++ stack, i)
+  defp do_eval(["drop" | rest], [_a | stack], i), do: do_eval(rest,  stack, i)
+  defp do_eval(["swap" | rest], [a, b | stack], i), do: do_eval(rest, [b, a] ++ stack, i)
+  defp do_eval(["over" | rest], [a, b | stack], i), do: do_eval(rest, [b, a, b] ++ stack, i)
 
-  defp do_eval(["drop" | rest], [a | stack], i) do
-    do_eval(rest,  stack, i)
-  end
-
-  defp do_eval(["swap" | rest], [a, b | stack], i) do
-    do_eval(rest, [b, a] ++ stack, i)
-  end
-
-  defp do_eval(["over" | rest], [a, b | stack], i) do
-    do_eval(rest, [b, a, b] ++ stack, i)
-  end
-
-  defp do_eval([i | rest], [_ | []], _i)  when i in @instruction_set do
+  defp do_eval([i | _rest], [_ | []], _)  when i in @instruction_set do
     raise Forth.StackUnderflow
   end
 
-  defp do_eval([i | rest], [], _i) when i in @instruction_set do
+  defp do_eval([i | _rest], [], _i) when i in @instruction_set do
     raise Forth.StackUnderflow
   end
 
@@ -120,16 +102,13 @@ defmodule Forth do
     if is_valid?(a) do
       do_eval(rest, [a] ++ stack, i)
     else
-      IO.inspect {a, rest, stack, i}, label: ">>>"
       raise Forth.UnknownWord
     end
   end
 
   def is_valid?(cmd) when cmd in @instruction_set, do: true
   def is_valid?(""), do: true
-
   def is_valid?(cmd) do
-    IO.inspect cmd, label: "CMD>"
     case Integer.parse(cmd) do
       {_v, _} -> true
       :error -> false
