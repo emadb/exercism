@@ -1,9 +1,8 @@
 defmodule Forth do
-  @opaque evaluator :: any
-
-  @instruction_set ["dup", "drop", "swap", "over"]
-
   defstruct command: "", instructions: %{}
+
+  @opaque evaluator :: %Forth{}
+  @instruction_set ["dup", "drop", "swap", "over"]
 
   @doc """
   Create a new evaluator.
