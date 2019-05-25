@@ -114,96 +114,10 @@ defmodule BowlingTest do
     assert Bowling.score(game) == 300
   end
 
-  test "rolls cannot score negative points" do
-    game = Bowling.start()
-    assert Bowling.roll(game, -1) == {:error, "Negative roll is invalid"}
-  end
-
-  test "a roll cannot score more than 10 points" do
-    game = Bowling.start()
-    assert Bowling.roll(game, 11) == {:error, "Pin count exceeds pins on the lane"}
-  end
-
-  test "two rolls in a frame cannot score more than 10 points" do
-    game = Bowling.start()
-    game = Bowling.roll(game, 5)
-    assert Bowling.roll(game, 6) == {:error, "Pin count exceeds pins on the lane"}
-  end
-
-  test "bonus roll after a strike in the last frame cannot score more than 10 points" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
-    game = roll_reduce(game, rolls)
-    assert Bowling.roll(game, 11) == {:error, "Pin count exceeds pins on the lane"}
-  end
-
-  test "two bonus rolls after a strike in the last frame cannot score more than 10 points" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 5]
-    game = roll_reduce(game, rolls)
-    assert Bowling.roll(game, 6) == {:error, "Pin count exceeds pins on the lane"}
-  end
-
   test "two bonus rolls after a strike in the last frame can score more than 10 points if one is a strike" do
     game = Bowling.start()
     rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 6]
     game = roll_reduce(game, rolls)
     assert Bowling.score(game) == 26
-  end
-
-  test "the second bonus rolls after a strike in the last frame cannot be a strike if the first one is not a strike" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 6]
-    game = roll_reduce(game, rolls)
-    assert Bowling.roll(game, 10) == {:error, "Pin count exceeds pins on the lane"}
-  end
-
-
-  test "second bonus roll after a strike in the last frame cannot score more than 10 points" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
-    game = roll_reduce(game, rolls)
-    assert Bowling.roll(game, 11) == {:error, "Pin count exceeds pins on the lane"}
-  end
-
-
-  test "an unstarted game cannot be scored" do
-    game = Bowling.start()
-    assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
-  end
-
-  test "an incomplete game cannot be scored" do
-    game = Bowling.start()
-    rolls = [0, 0]
-    game = roll_reduce(game, rolls)
-    assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
-  end
-
-  test "cannot roll if game already has ten frames" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    game = roll_reduce(game, rolls)
-    assert Bowling.roll(game, 0) == {:error, "Cannot roll after game is over"}
-  end
-
-  test "bonus rolls for a strike in the last frame must be rolled before score can be calculated" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
-    game = roll_reduce(game, rolls)
-    assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
-  end
-
-  test "both bonus rolls for a strike in the last frame must be rolled before score can be calculated" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10]
-    game = roll_reduce(game, rolls)
-    assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
-  end
-
-  test "bonus roll for a spare in the last frame must be rolled before score can be calculated" do
-    game = Bowling.start()
-    rolls = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 3]
-    game = roll_reduce(game, rolls)
-    assert Bowling.score(game) == {:error, "Score cannot be taken until the end of the game"}
   end
 end
